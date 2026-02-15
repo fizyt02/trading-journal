@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MM</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <section class="main" id="main">
+        <div class="content">
+            <h2 data-aos="fade-right" data-aos-duration="1000" data-aos-delay="800">Manage<br><span>Your Finances Here</span></h2>
+            <div class="animated-text" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="900">
+                <h3>History</h3>
+                <h3>Expenditure</h3>
+                <h3>Income</h3>
+            </div>
+            <a href="login.html" class="btn" data-aos="zoom-out" data-aos-duration="1000" data-aos-delay="1000">Log In</a>
+        </div>
+    </section>
+
+<!--  About Section -->
+
+    <section class="about" id="about">
+        <div class="title reveal">
+            <h2 class="section-title" data-aos="fade-up" data-aos-duration="1000">About</h2>
+        </div>
+        <div class="content">
+            <div class="column col-left reveal">
+                <div class="img-card" data-aos="fade-right" data-aos-duration="2000" data-aos-delay="200">
+                    <img src="Image/abaout.jpg" alt="Finances">
+                </div>
+            </div>
+            <div class="column col-right reveal">
+                <h2 class="content-title" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="200">Money Management</h2>
+                <p class="paragraph-text" data-aos="flip-up" data-aos-duration="1000" data-aos-delay="400">Money management is the practice of planning and controlling your income and expenses to achieve financial goals. It involves budgeting, saving regularly, and avoiding unnecessary debt to build long-term stability. Smart money management helps you stay secure, reduce stress, and grow wealth over time.</p>
+                <a href="#services" class="btn" data-aos="zoom-out-left" data-aos-duration="1000" data-aos-delay="600">Next</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+
+    <section class="services" id="services">
+        <div class="title">
+            <h2 class="section-title" data-aos="fade-up" data-aos-duration="1000">Three Pillars</h2>
+        </div>
+        <div class="content">
+            <div class="card" data-aos="fade-right" data-aos-duration="1000" data-aos-delay="400">
+                <div class="service-icon">
+                   <i class="fa-solid fa-building-columns"></i>
+                </div>
+                <div class="info">
+                    <h3>Investing</h3>
+                    <p>Investing means allocating funds today to generate returns in the future, rather than simply keeping money idle—so your money works for you.</p>
+                </div>
+            </div>
+            <div class="card" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="400">
+                <div class="service-icon">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                </div>
+                <div class="info">
+                    <h3>Income</h3>
+                    <p>Income is the money you receive regularly, such as salary, bonuses, freelance payments, or government allowances, to support your daily needs and lifestyle.</p>
+                </div>
+            </div>
+            <div class="card" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="400">
+                <div class="service-icon">
+                    <i class="fa-solid fa-arrow-trend-down"></i>
+                </div>
+                <div class="info">
+                    <h3>Expenditure</h3>
+                    <p>Expenditure is the money you spend on goods and services to meet your daily needs, such as food, transportation, rent, utilities, and entertainment.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+  
+      <footer class="footer">
+        <span class="footer-title">AmethystFiz</span>
+        <p>Copyright @2025 <a href="https://linktr.ee/AmethystFiz">Portofolio Hafiz</a>. All Rights Reserved.</p>
+      </footer>
+
+
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+      AOS.init({offset:0});
+    </script>
+    <script>
+
+        window.addEventListener("scroll", function(){
+    scrollBtn.classList.toggle("active", window.scrollY > 500);
+});
+
+//javascript for scroll back to top on click scroll-to-top button
+
+// document.querySelector(".scrollToTop-btn").addEventListener("click", () => {
+//   document.body.scrollTop = 0;
+//   document.documentElement.scrollTop = 0;
+// });
+
+        const menuBtn = document.querySelector(".menu-btn");
+        const navigation = document.querySelector(".navigation");
+        const navigationItems = document.querySelector(".navigation a");
+
+        menuBtn.addEventListener("click", () => {
+            menuBtn.classList.toggle("active");
+            navigation.classList.toggle("active");
+        })
+        // Navigation Effects
+        window.addEventListener("scroll", function(){
+            const header = document.querySelector("header");
+            header.classList.toggle("sticky", window.scrollY > 0);
+        })
+
+        navigationItems.forEach((navigationItem) => {
+            navigationItem.addEventListener("click", () => {
+                menuBtn.classList.remove("active");
+                navigation.classList.remove("active")
+            })
+        })
+
+
+
+    </script>
+</body>
+</html>
