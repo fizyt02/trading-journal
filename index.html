@@ -3,10 +3,427 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MM</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Money Management</title>
     <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        /* Import Font */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+        /* Global Reset */
+        *{
+            padding: 0;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+
+        body{
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles (Disimpan jika nanti header ditambahkan kembali) */
+        header{
+            z-index: 889;
+            position: fixed;
+            background-color: rgba(255,255,255,0.1);
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 15px 200px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s ease;
+        }
+
+        header.sticky{
+            background-color: #8F00FF;
+            padding: 10px 200px;
+        }
+
+        header .brand{
+            color: white;
+            font-size: 1.8em;
+            font-weight: 700;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        header .navigation{
+            position: relative;
+        }
+
+        header .navigation a{
+            color: white;
+            font-size: 1em;
+            text-decoration: none;
+            font-weight: 500;
+            margin-left: 30px;
+        }
+
+        header .navigation a:hover{
+            color: #8F00FF;
+        }
+
+        header .sticky .navigation a:hover{
+            color: black;
+        }
+
+        /* Section Global */
+        section{
+            padding: 100px 200px;
+        }
+
+        /* Main Section */
+        .main{
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            background-image: url(Image/index.jpg);
+            background-size: 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+        }
+
+        .main .content{
+            max-width: 1000px;
+        }
+
+        .main .content h2{
+            color: white;
+            font-size: 1.5em; /* Fixed Typo: 1,5em to 1.5em */
+            font-weight: 500;
+        }
+
+        .main .content h2 span{
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+
+        .animated-text{
+            position: relative;
+            height: 70px;
+            overflow: hidden;
+        }
+
+        .animated-text h3{
+            color: rgba(0, 255, 34, 0.534);
+            font-size: 3em;
+            font-weight: 700;
+            line-height: 70px;
+            letter-spacing: 1px;
+        }
+
+        .animated-text h3:nth-child(1){
+            animation: text-move 6s infinite ease-out;
+        }
+
+        @keyframes text-move {
+            0%,15%{ margin-top: 0px; }
+            25%,40%{ margin-top: -70px; }
+            50%,65%{ margin-top: -140px; }
+            75%,90%{ margin-top: -70px; }
+            100%{ margin-top: 0px; }
+        }
+
+        .btn{
+            color: white;
+            background-color: #000000;
+            font-size: 1em;
+            font-weight: 600;
+            display: inline-block;
+            padding: 10px 20px;
+            text-transform: uppercase;
+            text-decoration: none;
+            letter-spacing: 1px;
+            border-radius: 2px;
+            margin-top: 30px;
+            transition: 0.5s ease;
+        }
+
+        .btn:hover{
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .media-icons{
+            margin-top: 50px;
+        }
+
+        .media-icons a{
+            color: white;
+            font-size: 25px;
+            margin-right: 30px;
+        }
+
+        /* About Section */
+        .title{
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .section-title{
+            position: relative;
+            color: #000000;
+            font-size: 2.2em;
+            font-weight: 800;
+            margin-bottom: 60px;
+        }
+
+        .section-title::before{
+            content: "";
+            position: absolute;
+            top: 56px;
+            left: 50%;
+            width: 140px;
+            height: 4px;
+            background-color: #000000;
+            transform: translateX(-50%);
+        }
+
+        .section-title::after{
+            content: "";
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #000000;
+            transform: translateX(-50%);
+        }
+
+        .about .content{
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 100px; /* Fixed Typo: 100ph to 100px */
+            gap: 40px;
+        }
+
+        .about .content .col-left{
+            position: relative;
+            width: 100%;
+        }
+
+        .about .content .col-right{
+            position: relative;
+            width: 70%;
+        }
+
+        .about .content .col-left .img-card{
+            position: relative;
+            width: 100%;
+            min-height: 400px;
+        }
+
+        .about .content .col-left .img-card img{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 30px;
+        }
+
+        .about .content .col-right .content-title{
+            font-size: 2em;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+
+        .about .content .col-right .paragraph-text{
+            font-size: 1em;
+        }
+
+        /* Services Section */
+        .services .content{
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            flex-direction: row;
+            margin-top: 20px;
+        }
+
+        .title p{
+            font-size: 3em;
+            width: 100%;
+            text-align: center; /* Fixed: text-align 100% is invalid */
+        }
+
+        .services .content .card{
+            background-color: #fff;
+            width: 300px;
+            margin: 5px;
+            padding: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(1, 1, 1, 0.15); /* Fixed color syntax */
+            transition: 0.3s linear;
+        }
+
+        .services .content .card .service-icon{
+            color: #000000;
+            font-size: 5rem;
+            text-align: center;
+            transition: 0.3s linear;
+        }
+
+        .services .content .card .info{
+            text-align: center;
+        }
+
+        .services .content .card .info h3{
+            color: #000000;
+            font-size: 1rem;
+            font-weight: 700;
+            margin: 10px;
+            transition: 0.3s linear;
+        }
+
+        .services .content .card:hover{
+            background-color: #000000;
+            color: white;
+        }
+
+        .services .content .card:hover .service-icon,
+        .services .content .card:hover .info h3{
+            transform: translateY(-10px);
+            color: white;
+        }
+
+        /* Footer */
+        .footer{
+            background: #000000;
+            color: #fff;
+            text-align: center;
+            padding: 0.5em;
+        }
+        
+        .footer .footer-title{
+            font-size: 20px;
+            font-weight: 600;
+        }
+        
+        .footer p{
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        
+        .footer p a{
+            color: #990096;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        /* Scroll To Top Button Styles */
+        .scrollToTop-btn{
+            z-index: 999;
+            position: fixed;
+            background: #8F00FF;
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            right: 0;
+            bottom: 10px;
+            font-size: 22px;
+            text-align: center;
+            line-height: 45px;
+            border-radius: 3px;
+            cursor: pointer;
+            pointer-events: none;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        /* Responsive Media Queries */
+        @media (max-width:1040px) {
+            header{ padding: 12px 20px; }
+            header.sticky{ padding: 10px 20px; }
+            header .navigation{ display: none; }
+
+            .navigation.active{
+                z-index: 889;
+                position: fixed;
+                background-color: white;
+                top: 0;
+                right: 0;
+                width: 380px;
+                height: 100%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                box-shadow: 0 5px 25px rgba(1, 1, 1, 0.15);
+                transition: 0.3s ease;
+            }
+
+            header .navigation a{
+                color: black;
+                font-size: 1.2em;
+                margin: 10px;
+                padding: 10px 40px;
+                border-radius: 5px;
+            }
+
+            header .navigation a:hover{
+                background-color: rgb(216, 191, 216);
+                color: white;
+                transition: 0.3s ease;
+            }
+
+            .menu-btn{
+                position: absolute;
+                background-image: url(Image/menu.png);
+                background-position: center;
+                background-size: 30px;
+                background-repeat: no-repeat;
+                width: 40px;
+                height: 40px;
+                right: 0;
+                margin: 0 20px;
+                cursor: pointer;
+                transition: 0.3s ease;
+            }
+
+            .menu-btn.active{
+                z-index: 999;
+                background-image: url(Image/close.png);
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 25px;
+                transition: 0.3s ease;
+                filter: invert(1);
+            }
+
+            section{ padding: 80px 20px; }
+            .main .content h2{ font-size: 1em; }
+            .animated-text h3{ font-size: 2.2em; }
+            .section-title{ font-size: 1.8em; }
+            .about .content{ flex-direction: column; }
+            .about .content .column{ width: 100%; position: relative; }
+            .about .content .col-right{ margin-top: 40px; }
+            .skills .content{ flex-direction: column; }
+            .skills .content .column{ position: relative; width: 100%; }
+            .skills .content .col-right{ margin-top: 40px; }
+            .contact-form{ padding: 35px 40px; }
+        }
+    </style>
 </head>
 <body>
     <section class="main" id="main">
@@ -20,8 +437,6 @@
             <a href="login.html" class="btn" data-aos="zoom-out" data-aos-duration="1000" data-aos-delay="1000">Log In</a>
         </div>
     </section>
-
-<!--  About Section -->
 
     <section class="about" id="about">
         <div class="title reveal">
@@ -40,8 +455,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Services Section -->
 
     <section class="services" id="services">
         <div class="title">
@@ -78,52 +491,15 @@
         </div>
     </section>
   
-      <footer class="footer">
+    <footer class="footer">
         <span class="footer-title">AmethystFiz</span>
         <p>Copyright @2025 <a href="https://linktr.ee/AmethystFiz">Portofolio Hafiz</a>. All Rights Reserved.</p>
-      </footer>
-
+    </footer>
 
     <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
     <script>
       AOS.init({offset:0});
     </script>
-    <script>
-
-        window.addEventListener("scroll", function(){
-    scrollBtn.classList.toggle("active", window.scrollY > 500);
-});
-
-//javascript for scroll back to top on click scroll-to-top button
-
-// document.querySelector(".scrollToTop-btn").addEventListener("click", () => {
-//   document.body.scrollTop = 0;
-//   document.documentElement.scrollTop = 0;
-// });
-
-        const menuBtn = document.querySelector(".menu-btn");
-        const navigation = document.querySelector(".navigation");
-        const navigationItems = document.querySelector(".navigation a");
-
-        menuBtn.addEventListener("click", () => {
-            menuBtn.classList.toggle("active");
-            navigation.classList.toggle("active");
-        })
-        // Navigation Effects
-        window.addEventListener("scroll", function(){
-            const header = document.querySelector("header");
-            header.classList.toggle("sticky", window.scrollY > 0);
-        })
-
-        navigationItems.forEach((navigationItem) => {
-            navigationItem.addEventListener("click", () => {
-                menuBtn.classList.remove("active");
-                navigation.classList.remove("active")
-            })
-        })
-
-
-
-    </script>
+    <script src="script.js" defer></script>
 </body>
 </html>
