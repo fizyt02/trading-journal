@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="id" class="dark-theme">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trading Journal Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="dashboard.css">
+    <style>
+        /* Additional styles for trading journal */
+        .trade-history-card {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .trade-history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .trade-history-header h2 {
+            color: var(--text-primary);
+            font-size: 1.2rem;
+        }
+
+        .btn-add-trade {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: var(--neon-glow);
+        }
+
+        .btn-add-trade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(109, 90, 205, 0.4);
+        }
+
+        .trade-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .trade-table th {
+            text-align: left;
+            padding: 1rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--bg-tertiary);
+        }
+
+        .trade-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .trade-table tr:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .badge-result {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-win {
+            background: rgba(46, 213, 115, 0.2);
+            color: var(--success);
+        }
+
+        .badge-loss {
+            background: rgba(255, 71, 87, 0.2);
+            color: var(--danger);
+        }
+
+        .badge-breakeven {
+            background: rgba(255, 165, 2, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-side {
+            padding: 0.3rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-buy {
+            background: rgba(67, 97, 238, 0.2);
+            color: #4361ee;
+        }
+
+        .badge-sell {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .pnl-positive {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .pnl-negative {
+            color: var(--danger);
+            font-weight: 600;
+        }
+
+        .trade-images {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .trade-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            object-fit: cover;
+            cursor: pointer;
+            border: 2px solid var(--bg-tertiary);
+            transition: transform 0.2s;
+        }
+
+        .trade-img:hover {
+            transform: scale(1.1);
+            border-color: var(--accent-primary);
+        }
+
+        .no-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 5px;
+            background: var(--bg-tertiary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            background: rgba(67, 97, 238, 0.2);
+            color: #4361ee;
+        }
+
+        .btn-edit:hover {
+            background: #4361ee;
+            color: white;
+        }
+
+        .btn-delete {
+            background: rgba(255, 71, 87, 0.2);
+            color: #ff4757;
+        }
+
+        .btn-delete:hover {
+            background: #ff4757;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 15px;
+            width: 100%;
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--bg-tertiary);
+        }
+
+        .modal-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .btn-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.8rem;
+            background: var(--bg-tertiary);
+            border: 2px solid transparent;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(109, 90, 205, 0.1);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            background: var(--bg-tertiary);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            border-top: 1px solid var(--bg-tertiary);
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: 1px solid var(--bg-tertiary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .btn-save {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+            box-shadow: var(--neon-glow);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(109, 90, 205, 0.4);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--bg-tertiary);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .symbol-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .symbol-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+        }
+
+        .symbol-rank {
+            width: 30px;
+            height: 30px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .symbol-info {
+            flex: 1;
+        }
+
+        .symbol-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .symbol-count {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .symbol-bar {
+            width: 100px;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .symbol-progress {
+            height: 100%;
+            background: var(--gradient-primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .trade-table {
+                font-size: 0.8rem;
+            }
+            
+            .trade-table th,
+            .trade-table td {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="notification-container"></div>
+
+    <div class="dashboard">
+        <nav class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <span id="sidebar-username">Trading Journal</span>
+            </div>
+            <ul class="nav-links">
+                <li class="active" data-section="dashboard" data-content="dashboard-content">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                    <div class="nav-indicator"></div>
+                </li>
+                <li data-section="analytics" data-content="analytics-content">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Analitik</span>
+                    <div class="nav-indicator"></div>
+                </li>
+                <li data-section="projects" data-content="projects-content">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Proyek</span>
+                    <div class="nav-indicator"></div>
+                </li>
+                <li data-section="settings" data-content="settings-content">
+                    <i class="fas fa-cog"></i>
+                    <span>Pengaturan</span>
+                    <div class="nav-indicator"></div>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main-content">
+            <header>
+                <div class="header-left">
+                    <div class="search-bar">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Cari trade...">
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="notifications">
+                        <div class="notification-trigger">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge">0</span>
+                        </div>
+                        <div class="notifications-dropdown">
+                            <div class="notifications-header">
+                                <div class="header-left">
+                                    <h3 class="notifications-title">Notifikasi</h3>
+                                    <span class="mark-all">Tandai semua dibaca</span>
+                                </div>
+                            </div>
+                            <div class="notification-list"></div>
+                        </div>
+                    </div>
+
+                    <div class="profile">
+                        <div class="profile-trigger">
+                            <div class="profile-avatar">
+                                <span class="avatar-text">TJ</span>
+                            </div>
+                            <div class="profile-info">
+                                <span class="profile-name" id="profile-username">Trader</span>
+                                <span class="profile-role">Active</span>
+                            </div>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+
+                        <div class="profile-dropdown">
+                            <div class="dropdown-header">
+                                <div class="header-avatar">
+                                    <span class="avatar-text">TJ</span>
+                                </div>
+                                <div class="header-info">
+                                    <h4 id="dropdown-fullname">Trading Journal</h4>
+                                    <span id="dropdown-email">trader@journal.com</span>
+                                </div>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <i class="fas fa-user"></i>
+                                    <span>Profil Saya</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-cog"></i>
+                                    <span>Pengaturan</span>
+                                </li>
+                                <li>
+                                    <i class="fas fa-palette"></i>
+                                    <span>Dark Mode</span>
+                                    <label class="theme-switch">
+                                        <input type="checkbox" id="theme-toggle" checked>
+                                        <span class="switch-slider"></span>
+                                    </label>
+                                </li>
+                            </ul>
+                            <div class="dropdown-divider"></div>
+                            <ul class="dropdown-menu">
+                                <li class="logout" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Keluar</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div id="dashboard-content" class="content-section active">
+                <div class="stats-container">
+                    <div class="stat-card glow">
+                        <div class="stat-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Trades</h3>
+                            <p class="counter" id="totalTrades">0</p>
+                            <span class="trend positive" id="totalTradesTrend">+0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glow">
+                        <div class="stat-icon">
+                            <i class="fas fa-trophy"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Win Rate</h3>
+                            <p class="counter" id="winRate">0%</p>
+                            <span class="trend positive" id="winRateTrend">+0%</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glow">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total P&L</h3>
+                            <p class="counter" id="totalPnL">$0</p>
+                            <span class="trend positive" id="pnlTrend">+$0</span>
+                        </div>
+                    </div>
+                    <div class="stat-card glow">
+                        <div class="stat-icon">
+                            <i class="fas fa-balance-scale"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Average Risk</h3>
+                            <p class="counter" id="avgRisk">-</p>
+                            <span class="trend positive">R:R Ratio</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-card glow">
+                        <div class="revenue-header">
+                            <h2>Stats Keseluruhan</h2>
+                            <select class="revenue-filter" id="statsFilter">
+                                <option value="7">7 Hari Terakhir</option>
+                                <option value="30">30 Hari Terakhir</option>
+                                <option value="90">90 Hari Terakhir</option>
+                                <option value="365">Tahun Ini</option>
+                            </select>
+                        </div>
+                        <div id="overallStatsChart"></div>
+                    </div>
+                    <div class="chart-card glow">
+                        <div class="chart-header">
+                            <h3>Symbol Paling Sering</h3>
+                        </div>
+                        <div class="symbol-stats" id="symbolStats">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-bar"></i>
+                                <p>Belum ada data trading</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trade-history-card glow">
+                    <div class="trade-history-header">
+                        <h2>Trade History</h2>
+                        <button class="btn-add-trade" onclick="openTradeModal()">
+                            <i class="fas fa-plus"></i>
+                            Tambah Trade
+                        </button>
+                    </div>
+                    <div id="tradeHistoryTable">
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <h3>Belum ada trade history</h3>
+                            <p>Klik tombol "Tambah Trade" untuk memulai journal trading Anda</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="analytics-content" class="content-section">
+                <div class="section-header">
+                    <h2>Analitik Trading</h2>
+                    <p>Analisis performa trading Anda</p>
+                </div>
+                <div class="analytics-grid">
+                    <div class="analytics-card">
+                        <div id="performanceChart"></div>
+                    </div>
+                    <div class="analytics-card">
+                        <div id="winLossChart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="projects-content" class="content-section">
+                <div class="section-header">
+                    <h2>Proyek Trading</h2>
+                    <p>Kelola strategi dan goals trading</p>
+                </div>
+                <div class="projects-grid">
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>Strategy: Scalping XAUUSD</h3>
+                            <span class="status in-progress">Aktif</span>
+                        </div>
+                        <p>Strategi scalping pada gold dengan timeframe M5</p>
+                        <div class="project-meta">
+                            <div class="project-progress">
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 75%"></div>
+                                </div>
+                                <span>75% Win Rate</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="settings-content" class="content-section">
+                <div class="section-header">
+                    <h2>Pengaturan</h2>
+                    <p>Kustomisasi trading journal Anda</p>
+                </div>
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>Preferensi Tema</h3>
+                        <div class="setting-option">
+                            <span>Mode Gelap</span>
+                            <label class="switch">
+                                <input type="checkbox" id="theme-toggle-settings" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="settings-card">
+                        <h3>Notifikasi</h3>
+                        <div class="setting-option">
+                            <span>Notifikasi Trade</span>
+                            <label class="switch">
+                                <input type="checkbox" checked>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Trade Modal -->
+    <div class="modal-overlay" id="tradeModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>
+                    <i class="fas fa-plus-circle"></i>
+                    <span id="modalTitle">Tambah Trade Baru</span>
+                </h2>
+                <button class="btn-close" onclick="closeTradeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="tradeForm" onsubmit="saveTrade(event)">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <!-- Result -->
+                        <div class="form-group">
+                            <label for="result">Result *</label>
+                            <select id="result" name="result" required>
+                                <option value="">Pilih Result</option>
+                                <option value="WIN">WIN</option>
+                                <option value="LOSS">LOSS</option>
+                                <option value="BREAKEVEN">BREAKEVEN</option>
+                            </select>
+                        </div>
+
+                        <!-- Symbol -->
+                        <div class="form-group">
+                            <label for="symbol">Symbol *</label>
+                            <input type="text" id="symbol" name="symbol" placeholder="XAUUSD, BTCUSD..." required>
+                        </div>
+
+                        <!-- Open Date -->
+                        <div class="form-group">
+                            <label for="open_date">Open Date *</label>
+                            <input type="datetime-local" id="open_date" name="open_date" required>
+                        </div>
+
+                        <!-- Type -->
+                        <div class="form-group">
+                            <label for="type">Type *</label>
+                            <select id="type" name="type" required>
+                                <option value="">Pilih Type</option>
+                                <option value="forex">Forex</option>
+                                <option value="crypto">Crypto</option>
+                                <option value="saham">Saham</option>
+                                <option value="commodity">Commodity</option>
+                                <option value="lainnya">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <!-- Side -->
+                        <div class="form-group">
+                            <label for="side">Side *</label>
+                            <select id="side" name="side" required>
+                                <option value="">Pilih Side</option>
+                                <option value="buy">BUY</option>
+                                <option value="sell">SELL</option>
+                            </select>
+                        </div>
+
+                        <!-- Time Frame -->
+                        <div class="form-group">
+                            <label for="time_frame">Time Frame</label>
+                            <select id="time_frame" name="time_frame">
+                                <option value="">Pilih TF</option>
+                                <option value="M1">M1</option>
+                                <option value="M5">M5</option>
+                                <option value="M15">M15</option>
+                                <option value="M30">M30</option>
+                                <option value="H1">H1</option>
+                                <option value="H4">H4</option>
+                                <option value="D1">D1</option>
+                                <option value="W1">W1</option>
+                                <option value="MN">MN</option>
+                            </select>
+                        </div>
+
+                        <!-- Risk Reward -->
+                        <div class="form-group">
+                            <label for="risk_reward">Risk:Reward</label>
+                            <select id="risk_reward" name="risk_reward">
+                                <option value="">Pilih R:R</option>
+                                <option value="1:1">1:1</option>
+                                <option value="1:2">1:2</option>
+                                <option value="1:3">1:3</option>
+                                <option value="1:4">1:4</option>
+                                <option value="1:5">1:5</option>
+                                <option value="1:6">1:6</option>
+                                <option value="1:7">1:7</option>
+                                <option value="1:8">1:8</option>
+                                <option value="1:9">1:9</option>
+                                <option value="1:10">1:10</option>
+                                <option value="1:12">1:12</option>
+                                <option value="1:15">1:15</option>
+                                <option value="1:20">1:20</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+
+                        <!-- PnL -->
+                        <div class="form-group">
+                            <label for="pnl">P&L (USD) *</label>
+                            <input type="number" id="pnl" name="pnl" step="0.01" placeholder="Profit/Loss" required>
+                        </div>
+
+                        <!-- Image Before -->
+                        <div class="form-group">
+                            <label for="image_before">Image Before</label>
+                            <input type="url" id="image_before" name="image_before" placeholder="Link screenshot...">
+                        </div>
+
+                        <!-- Image After -->
+                        <div class="form-group">
+                            <label for="image_after">Image After</label>
+                            <input type="url" id="image_after" name="image_after" placeholder="Link screenshot...">
+                        </div>
+
+                        <!-- Note -->
+                        <div class="form-group full-width">
+                            <label for="note">Note / Analisis</label>
+                            <textarea id="note" name="note" placeholder="Catatan trading, setup, alasan entry..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeTradeModal()">Batal</button>
+                    <button type="submit" class="btn-save">
+                        <i class="fas fa-save"></i>
+                        Simpan Trade
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Configuration
+        const SUPABASE_URL = 'https://xugvfahhmjidhlvtfvua.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_UFcMgjZdauFvAusQm4JtXA_c8XvYqO2';
+        
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        let currentUser = null;
+        let tradesData = [];
+        let currentEditId = null;
+        let overallStatsChart = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            initNavigation();
+            initTheme();
+            loadDashboardData();
+        });
+
+        // Check Authentication
+        async function checkAuth() {
+            const { data: { user }, error } = await supabase.auth.getUser();
+            if (error || !user) {
+                window.location.href = 'login.html'; // Redirect to login if not authenticated
+                return;
+            }
+            currentUser = user;
+            updateUserUI(user);
+        }
+
+        // Update UI with user data
+        function updateUserUI(user) {
+            const email = user.email || 'trader@journal.com';
+            const name = email.split('@')[0];
+            document.getElementById('profile-username').textContent = name;
+            document.getElementById('dropdown-fullname').textContent = name;
+            document.getElementById('dropdown-email').textContent = email;
+            document.querySelectorAll('.avatar-text').forEach(el => {
+                el.textContent = name.substring(0, 2).toUpperCase();
+            });
+        }
+
+        // Load all dashboard data
+        async function loadDashboardData() {
+            await loadTrades();
+            updateStats();
+            renderCharts();
+            renderSymbolStats();
+            renderTradeTable();
+        }
+
+        // Load trades from Supabase
+        async function loadTrades() {
+            try {
+                const { data, error } = await supabase
+                    .from('trades')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('open_date', { ascending: false });
+
+                if (error) throw error;
+                tradesData = data || [];
+            } catch (error) {
+                console.error('Error loading trades:', error);
+                showNotification('Gagal memuat data trade', 'error');
+            }
+        }
+
+        // Update Statistics
+        function updateStats() {
+            const total = tradesData.length;
+            const wins = tradesData.filter(t => t.result === 'WIN').length;
+            const losses = tradesData.filter(t => t.result === 'LOSS').length;
+            const winRate = total > 0 ? ((wins / total) * 100).toFixed(1) : 0;
+            const totalPnL = tradesData.reduce((sum, t) => sum + (parseFloat(t.pnl) || 0), 0);
+            
+            // Calculate average R:R
+            const validRR = tradesData.filter(t => t.risk_reward && t.risk_reward !== 'Custom');
+            let avgRR = '-';
+            if (validRR.length > 0) {
+                const rrValues = validRR.map(t => {
+                    const ratio = t.risk_reward.split(':')[1];
+                    return parseFloat(ratio) || 0;
+                });
+                const avg = rrValues.reduce((a, b) => a + b, 0) / rrValues.length;
+                avgRR = '1:' + avg.toFixed(1);
+            }
+
+            // Animate counters
+            animateValue('totalTrades', 0, total, 1000);
+            document.getElementById('winRate').textContent = winRate + '%';
+            document.getElementById('totalPnL').textContent = formatCurrency(totalPnL);
+            document.getElementById('avgRisk').textContent = avgRR;
+
+            // Update trends (mock calculation - compare with last month)
+            document.getElementById('totalTradesTrend').textContent = '+' + total + ' trades';
+            document.getElementById('winRateTrend').textContent = winRate >= 50 ? '+' + winRate + '%' : winRate + '%';
+            document.getElementById('pnlTrend').textContent = (totalPnL >= 0 ? '+' : '') + formatCurrency(totalPnL);
+            
+            // Update trend colors
+            document.getElementById('pnlTrend').className = 'trend ' + (totalPnL >= 0 ? 'positive' : 'negative');
+        }
+
+        // Render Charts
+        function renderCharts() {
+            renderOverallStatsChart();
+            renderPerformanceChart();
+        }
+
+        // Overall Stats Chart (Line chart like Excel)
+        function renderOverallStatsChart() {
+            const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+            
+            // Group trades by day
+            const tradesByDay = new Array(7).fill(0);
+            const pnlByDay = new Array(7).fill(0);
+            
+            tradesData.forEach(trade => {
+                const date = new Date(trade.open_date);
+                const dayIndex = date.getDay();
+                const adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1; // Adjust to start from Monday
+                tradesByDay[adjustedIndex]++;
+                pnlByDay[adjustedIndex] += parseFloat(trade.pnl) || 0;
+            });
+
+            const options = {
+                series: [{
+                    name: 'Total Trades',
+                    type: 'column',
+                    data: tradesByDay
+                }, {
+                    name: 'P&L',
+                    type: 'line',
+                    data: pnlByDay
+                }],
+                chart: {
+                    height: 350,
+                    type: 'line',
+                    background: 'transparent',
+                    toolbar: { show: false }
+                },
+                stroke: {
+                    width: [0, 4]
+                },
+                plotOptions: {
+                    bar: {
+                        columnWidth: '50%'
+                    }
+                },
+                colors: ['#6d5acd', '#2ed573'],
+                dataLabels: {
+                    enabled: true,
+                    enabledOnSeries: [1]
+                },
+                xaxis: {
+                    categories: days,
+                    labels: { style: { colors: '#a0a3bd' } }
+                },
+                yaxis: [{
+                    title: {
+                        text: 'Trades',
+                        style: { color: '#6d5acd' }
+                    },
+                    labels: { style: { colors: '#a0a3bd' } }
+                }, {
+                    opposite: true,
+                    title: {
+                        text: 'P&L',
+                        style: { color: '#2ed573' }
+                    },
+                    labels: { 
+                        style: { colors: '#a0a3bd' },
+                        formatter: (value) => '$' + value.toFixed(0)
+                    }
+                }],
+                grid: {
+                    borderColor: '#1a1d25'
+                },
+                tooltip: {
+                    theme: 'dark',
+                    y: {
+                        formatter: function (val) {
+                            return "$" + val
+                        }
+                    }
+                }
+            };
+
+            if (overallStatsChart) {
+                overallStatsChart.destroy();
+            }
+            overallStatsChart = new ApexCharts(document.querySelector("#overallStatsChart"), options);
+            overallStatsChart.render();
+        }
+
+        // Symbol Statistics
+        function renderSymbolStats() {
+            const symbolCount = {};
+            tradesData.forEach(trade => {
+                const symbol = trade.symbol.toUpperCase();
+                symbolCount[symbol] = (symbolCount[symbol] || 0) + 1;
+            });
+
+            const sortedSymbols = Object.entries(symbolCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            const maxCount = sortedSymbols.length > 0 ? sortedSymbols[0][1] : 1;
+
+            const container = document.getElementById('symbolStats');
+            
+            if (sortedSymbols.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-chart-bar"></i>
+                        <p>Belum ada data trading</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = sortedSymbols.map((([symbol, count], index) => `
+                <div class="symbol-item">
+                    <div class="symbol-rank">${index + 1}</div>
+                    <div class="symbol-info">
+                        <div class="symbol-name">${symbol}</div>
+                        <div class="symbol-count">${count} trades</div>
+                    </div>
+                    <div class="symbol-bar">
+                        <div class="symbol-progress" style="width: ${(count / maxCount) * 100}%"></div>
+                    </div>
+                </div>
+            `)).join('');
+        }
+
+        // Render Trade Table
+        function renderTradeTable() {
+            const container = document.getElementById('tradeHistoryTable');
+            
+            if (tradesData.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-history"></i>
+                        <h3>Belum ada trade history</h3>
+                        <p>Klik tombol "Tambah Trade" untuk memulai journal trading Anda</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const html = `
+                <table class="trade-table">
+                    <thead>
+                        <tr>
+                            <th>Result</th>
+                            <th>Symbol</th>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Side</th>
+                            <th>TF</th>
+                            <th>R:R</th>
+                            <th>P&L</th>
+                            <th>Images</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tradesData.map(trade => `
+                            <tr>
+                                <td>
+                                    <span class="badge-result badge-${trade.result ? trade.result.toLowerCase() : 'breakeven'}">
+                                        ${trade.result || '-'}
+                                    </span>
+                                </td>
+                                <td><strong>${trade.symbol}</strong></td>
+                                <td>${formatDate(trade.open_date)}</td>
+                                <td>${trade.type || '-'}</td>
+                                <td>
+                                    <span class="badge-side badge-${trade.side || 'buy'}">
+                                        ${trade.side ? trade.side.toUpperCase() : '-'}
+                                    </span>
+                                </td>
+                                <td>${trade.time_frame || '-'}</td>
+                                <td>${trade.risk_reward || '-'}</td>
+                                <td class="${trade.pnl >= 0 ? 'pnl-positive' : 'pnl-negative'}">
+                                    ${formatCurrency(trade.pnl)}
+                                </td>
+                                <td>
+                                    <div class="trade-images">
+                                        ${trade.image_before 
+                                            ? `<img src="${trade.image_before}" class="trade-img" onclick="viewImage('${trade.image_before}')" title="Before">` 
+                                            : '<div class="no-image">-</div>'}
+                                        ${trade.image_after 
+                                            ? `<img src="${trade.image_after}" class="trade-img" onclick="viewImage('${trade.image_after}')" title="After">` 
+                                            : ''}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="btn-action btn-edit" onclick="editTrade('${trade.id}')" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn-action btn-delete" onclick="deleteTrade('${trade.id}')" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = html;
+        }
+
+        // Trade Modal Functions
+        function openTradeModal(isEdit = false) {
+            document.getElementById('tradeModal').classList.add('active');
+            document.getElementById('modalTitle').textContent = isEdit ? 'Edit Trade' : 'Tambah Trade Baru';
+            
+            if (!isEdit) {
+                // Set default date to now
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('open_date').value = now.toISOString().slice(0, 16);
+            }
+            
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeTradeModal() {
+            document.getElementById('tradeModal').classList.remove('active');
+            document.getElementById('tradeForm').reset();
+            currentEditId = null;
+            document.body.style.overflow = '';
+        }
+
+        // Save Trade
+        async function saveTrade(event) {
+            event.preventDefault();
+            
+            const formData = new FormData(event.target);
+            const tradeData = {
+                result: formData.get('result'),
+                symbol: formData.get('symbol').toUpperCase(),
+                open_date: formData.get('open_date'),
+                type: formData.get('type'),
+                side: formData.get('side'),
+                time_frame: formData.get('time_frame') || null,
+                risk_reward: formData.get('risk_reward') || null,
+                pnl: parseFloat(formData.get('pnl')) || 0,
+                image_before: formData.get('image_before') || null,
+                image_after: formData.get('image_after') || null,
+                note: formData.get('note') || null,
+                user_id: currentUser.id
+            };
+
+            try {
+                let result;
+                
+                if (currentEditId) {
+                    result = await supabase
+                        .from('trades')
+                        .update(tradeData)
+                        .eq('id', currentEditId)
+                        .eq('user_id', currentUser.id);
+                        
+                    showNotification('Trade berhasil diupdate!', 'success');
+                } else {
+                    result = await supabase
+                        .from('trades')
+                        .insert([tradeData]);
+                        
+                    showNotification('Trade berhasil disimpan!', 'success');
+                }
+
+                if (result.error) throw result.error;
+
+                closeTradeModal();
+                await loadDashboardData();
+
+            } catch (error) {
+                console.error('Error saving trade:', error);
+                showNotification('Error: ' + error.message, 'error');
+            }
+        }
+
+        // Edit Trade
+        function editTrade(id) {
+            const trade = tradesData.find(t => t.id === id);
+            if (!trade) return;
+
+            currentEditId = id;
+            
+            document.getElementById('result').value = trade.result || '';
+            document.getElementById('symbol').value = trade.symbol || '';
+            document.getElementById('open_date').value = trade.open_date ? trade.open_date.slice(0, 16) : '';
+            document.getElementById('type').value = trade.type || '';
+            document.getElementById('side').value = trade.side || '';
+            document.getElementById('time_frame').value = trade.time_frame || '';
+            document.getElementById('risk_reward').value = trade.risk_reward || '';
+            document.getElementById('pnl').value = trade.pnl || '';
+            document.getElementById('image_before').value = trade.image_before || '';
+            document.getElementById('image_after').value = trade.image_after || '';
+            document.getElementById('note').value = trade.note || '';
+
+            openTradeModal(true);
+        }
+
+        // Delete Trade
+        async function deleteTrade(id) {
+            if (!confirm('Apakah Anda yakin ingin menghapus trade ini?')) return;
+
+            try {
+                const { error } = await supabase
+                    .from('trades')
+                    .delete()
+                    .eq('id', id)
+                    .eq('user_id', currentUser.id);
+
+                if (error) throw error;
+
+                showNotification('Trade berhasil dihapus!', 'success');
+                await loadDashboardData();
+
+            } catch (error) {
+                console.error('Error deleting trade:', error);
+                showNotification('Error menghapus: ' + error.message, 'error');
+            }
+        }
+
+        // View Image
+        function viewImage(url) {
+            window.open(url, '_blank');
+        }
+
+        // Helper Functions
+        function formatCurrency(value) {
+            if (value === null || value === undefined) return '-';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(value);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('id-ID', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            });
+        }
+
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            const range = end - start;
+            const minTimer = 50;
+            let stepTime = Math.abs(Math.floor(duration / range));
+            stepTime = Math.max(stepTime, minTimer);
+            
+            let startTime = new Date().getTime();
+            let endTime = startTime + duration;
+            let timer;
+            
+            function run() {
+                let now = new Date().getTime();
+                let remaining = Math.max((endTime - now) / duration, 0);
+                let value = Math.round(end - (remaining * range));
+                obj.innerHTML = value;
+                if (value == end) {
+                    clearInterval(timer);
+                }
+            }
+            
+            timer = setInterval(run, stepTime);
+            run();
+        }
+
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('notification-container');
+            const notification = document.createElement('div');
+            notification.className = `custom-notification ${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'times-circle' : 'exclamation-circle';
+            
+            notification.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <div class="notification-content">
+                    <p>${message}</p>
+                </div>
+            `;
+
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease forwards';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        // Navigation
+        function initNavigation() {
+            const navLinks = document.querySelectorAll('.nav-links li');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    const section = link.dataset.section;
+                    const contentId = link.dataset.content;
+                    
+                    document.querySelectorAll('.content-section').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(contentId).classList.add('active');
+                    
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+        }
+
+        // Theme Toggle
+        function initTheme() {
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeToggleSettings = document.getElementById('theme-toggle-settings');
+            
+            function toggleTheme() {
+                document.documentElement.classList.toggle('light-theme');
+                document.documentElement.classList.toggle('dark-theme');
+            }
+            
+            if (themeToggle) {
+                themeToggle.addEventListener('change', toggleTheme);
+            }
+            if (themeToggleSettings) {
+                themeToggleSettings.addEventListener('change', toggleTheme);
+            }
+        }
+
+        // Logout
+        async function logout() {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        }
+
+        // Close modal on outside click
+        document.getElementById('tradeModal').addEventListener('click', function(e) {
+            if (e.target === this) closeTradeModal();
+        });
+
+        // Filter change
+        document.getElementById('statsFilter')?.addEventListener('change', function() {
+            renderOverallStatsChart();
+        });
+    </script>
+</body>
+</html>
