@@ -1,18 +1,24 @@
+// script.js - Versi diperbaiki (fix typo Supabase, tambah minor improvements)
 console.log('script.js berhasil dimuat!'); 
 
-const supabaseUrl  = 'https://jrsbpkjqosnepruiljc.supabase.co';
-const supabaseKey  = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
-const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = 'https://jrsbpkjqosnepruiljc.supabase.co';
+const supabaseKey = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);  // Fix: lowercase 'supabase'
 
 console.log('Supabase client berhasil dibuat!'); // Debug: cek inisialisasi
 
 // Helper: Cek apakah sudah login
 async function checkAuth(redirectIfLoggedIn = false) {
-  const { data: { session } } = await supabase.auth.getSession();
-  if (session && redirectIfLoggedIn && !window.location.pathname.includes('dashboard.html')) {
-    window.location.href = 'dashboard.html';
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session && redirectIfLoggedIn && !window.location.pathname.includes('dashboard.html')) {
+      window.location.href = 'dashboard.html';
+    }
+    return session;
+  } catch (error) {
+    console.error('Check auth error:', error);
+    return null;
   }
-  return session;
 }
 
 // Jalankan check auth di semua halaman
@@ -31,9 +37,9 @@ if (registerForm) {
     console.log('Form register di-submit!');
 
     const fullName = document.querySelector('input[placeholder="Full Name"]').value.trim();
-    const email     = document.querySelector('input[placeholder="Email (Gmail)"]').value.trim();
-    const phone     = document.querySelector('input[placeholder="Phone Number"]').value.trim();
-    const password  = document.querySelector('input[placeholder="Password"]').value;
+    const email = document.querySelector('input[placeholder="Email (Gmail)"]').value.trim();
+    const phone = document.querySelector('input[placeholder="Phone Number"]').value.trim();
+    const password = document.querySelector('input[placeholder="Password"]').value;
 
     if (!fullName || !email || !phone || !password) {
       alert('Semua field wajib diisi!');
@@ -167,4 +173,3 @@ if (forgotForm) {
 } else {
   console.log('forgotForm tidak ditemukan di halaman ini (normal jika bukan halaman forgot-password)');
 }
-
