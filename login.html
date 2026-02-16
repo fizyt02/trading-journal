@@ -7,120 +7,22 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: url('image/latar.jpg') no-repeat center center fixed;
-      background-size: cover;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .login-container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 30px;
-      width: 350px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.526);
-      border: 1px solid rgba(255, 255, 255, 0.015);
-      z-index: 3;
-      text-align: center;
-    }
-
-    .input-group {
-      position: relative;
-      margin-bottom: 15px;
-      width: 100%;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 12px 15px 12px 40px;
-      border: none;
-      border-radius: 50px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .input-group input::placeholder {
-      color: white !important;
-      opacity: 0.7;
-    }
-
-    .input-group i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: white;
-      font-size: 18px;
-    }
-
-    .login-container h2 {
-      margin-bottom: 25px;
-      color: white;
-      font-weight: 600;
-    }
-
-    .remember-me {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 15px;
-      color: white;
-      font-size: 14px;
-    }
-
-    .remember-me label {
-      margin-left: 5px;
-    }
-
-    .forgot-password {
-      color: #fff;
-      text-decoration: none;
-      font-size: 14px;
-    }
-
-    .forgot-password:hover {
-      text-decoration: underline;
-    }
-
-    .login-btn {
-      width: 100%;
-      padding: 12px;
-      background: white;
-      color: #6600cc;
-      border: none;
-      border-radius: 50px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-
-    .register-link {
-      display: block;
-      margin-top: 15px;
-      color: #fff;
-      font-size: 14px;
-      text-decoration: none;
-    }
-
-    .register-link:hover {
-      text-decoration: underline;
-    }
+    /* style tetap sama seperti sebelumnya, saya tidak ubah agar tidak berubah tampilan */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: url('image/latar.jpg') no-repeat center center fixed; background-size: cover; height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+    .login-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 30px; width: 350px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.526); border: 1px solid rgba(255, 255, 255, 0.015); z-index: 3; text-align: center; }
+    .input-group { position: relative; margin-bottom: 15px; width: 100%; }
+    .input-group input { width: 100%; padding: 12px 15px 12px 40px; border: none; border-radius: 50px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 14px; outline: none; }
+    .input-group input::placeholder { color: white !important; opacity: 0.7; }
+    .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: white; font-size: 18px; }
+    .login-container h2 { margin-bottom: 25px; color: white; font-weight: 600; }
+    .remember-me { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; color: white; font-size: 14px; }
+    .remember-me label { margin-left: 5px; }
+    .forgot-password { color: #fff; text-decoration: none; font-size: 14px; }
+    .forgot-password:hover { text-decoration: underline; }
+    .login-btn { width: 100%; padding: 12px; background: white; color: #6600cc; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .register-link { display: block; margin-top: 15px; color: #fff; font-size: 14px; text-decoration: none; }
+    .register-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -131,12 +33,12 @@
     <form id="loginForm">
       <div class="input-group">
         <i class="fas fa-envelope"></i>
-        <input type="email" placeholder="Email" required />
+        <input type="email" id="login-email" placeholder="Email" required />
       </div>
       
       <div class="input-group">
         <i class="fa-solid fa-lock"></i>
-        <input type="password" placeholder="Password" required />
+        <input type="password" id="login-password" placeholder="Password" required />
       </div>
       
       <div class="remember-me">

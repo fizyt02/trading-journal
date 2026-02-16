@@ -1,175 +1,137 @@
-// script.js - Versi diperbaiki (fix typo Supabase, tambah minor improvements)
-console.log('script.js berhasil dimuat!'); 
+// script.js - Satu file untuk semua auth logic
+console.log('script.js berhasil dimuat!');
 
-const supabaseUrl = 'https://jrsbpkjqosnepruiljc.supabase.co';
-const supabaseKey = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);  // Fix: lowercase 'supabase'
+const SUPABASE_URL = 'https://jrsbpkjqosnepruiljc.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
 
-console.log('Supabase client berhasil dibuat!'); // Debug: cek inisialisasi
+// Buat client sekali saja
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+console.log('Supabase client dibuat');
 
-// Helper: Cek apakah sudah login
+// Helper: Cek session & redirect jika sudah login
 async function checkAuth(redirectIfLoggedIn = false) {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session && redirectIfLoggedIn && !window.location.pathname.includes('dashboard.html')) {
-      window.location.href = 'dashboard.html';
-    }
-    return session;
-  } catch (error) {
-    console.error('Check auth error:', error);
-    return null;
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session && redirectIfLoggedIn && !window.location.pathname.includes('dashboard.html')) {
+    window.location.href = 'dashboard.html';
   }
+  return session;
 }
 
 // Jalankan check auth di semua halaman
 document.addEventListener('DOMContentLoaded', async () => {
-  console.log('DOMContentLoaded: Memulai check auth');
+  console.log('Memulai check auth...');
   await checkAuth(true);
 });
 
-// REGISTER LOGIC (tanpa username)
+// REGISTER
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
-  console.log('registerForm DITEMUKAN! Event listener diaktifkan');
-  
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log('Form register di-submit!');
+    const fullName = document.getElementById('reg-fullname')?.value.trim() || '';
+    const email    = document.getElementById('reg-email')?.value.trim() || '';
+    const phone    = document.getElementById('reg-phone')?.value.trim() || '';
+    const password = document.getElementById('reg-password')?.value || '';
 
-    const fullName = document.querySelector('input[placeholder="Full Name"]').value.trim();
-    const email = document.querySelector('input[placeholder="Email (Gmail)"]').value.trim();
-    const phone = document.querySelector('input[placeholder="Phone Number"]').value.trim();
-    const password = document.querySelector('input[placeholder="Password"]').value;
-
-    if (!fullName || !email || !phone || !password) {
-      alert('Semua field wajib diisi!');
-      console.log('Validasi gagal: field kosong');
-      return;
-    }
-    if (password.length < 6) {
-      alert('Password minimal 6 karakter!');
-      console.log('Validasi gagal: password terlalu pendek');
-      return;
-    }
+    if (!fullName || !email || !phone || !password) return alert('Semua field wajib diisi!');
+    if (password.length < 6) return alert('Password minimal 6 karakter!');
 
     try {
-      console.log('Mengirim request signUp ke Supabase...');
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            full_name: fullName,
-            phone: phone
-          }
-        }
+      const { error } = await supabaseClient.auth.signUp({
+        email, password,
+        options: { data: { full_name: fullName, phone } }
       });
-
       if (error) throw error;
-
-      console.log('Registrasi sukses:', data);
-      alert('Registrasi berhasil! Cek email Anda untuk konfirmasi akun (jika diaktifkan).');
+      alert('Registrasi berhasil! Cek email untuk konfirmasi.');
       window.location.href = 'login.html';
-    } catch (error) {
-      console.error('Register error:', error);
-      let msg = 'Gagal registrasi';
-      if (error.message.includes('duplicate key') || error.message.includes('unique constraint')) {
-        msg = 'Email sudah terdaftar!';
-      } else if (error.message.includes('weak password')) {
-        msg = 'Password terlalu lemah (minimal 6 karakter, tambah angka/symbol lebih baik)';
-      } else if (error.message.includes('rate limit')) {
-        msg = 'Terlalu banyak percobaan. Coba lagi beberapa menit.';
-      } else {
-        msg += ': ' + (error.message || 'Terjadi kesalahan tidak diketahui');
-      }
-      alert(msg);
+    } catch (err) {
+      alert('Gagal registrasi: ' + (err.message || 'Cek koneksi'));
+      console.error(err);
     }
   });
-} else {
-  console.error('registerForm TIDAK DITEMUKAN! Pastikan <form id="registerForm"> ada di HTML.');
 }
 
-// LOGIN LOGIC
+// LOGIN
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
-  console.log('loginForm DITEMUKAN!');
-  
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log('Form login di-submit!');
+    const email = document.getElementById('login-email')?.value.trim() || '';
+    const password = document.getElementById('login-password')?.value || '';
 
-    const email = document.querySelector('input[placeholder="Email"]').value.trim();
-    const password = document.querySelector('input[placeholder="Password"]').value;
-
-    if (!email || !password) {
-      alert('Email dan password wajib diisi!');
-      return;
-    }
+    if (!email || !password) return alert('Email dan password wajib diisi!');
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) throw error;
-
       alert('Login berhasil!');
       window.location.href = 'dashboard.html';
-    } catch (error) {
-      let msg = 'Terjadi kesalahan';
-      if (error.message.includes('Invalid login credentials')) {
-        msg = 'Email atau password salah!';
-      } else if (error.message.includes('Email not confirmed')) {
-        msg = 'Silakan konfirmasi email terlebih dahulu! Cek inbox/spam.';
-      } else {
-        msg += ': ' + error.message;
-      }
+    } catch (err) {
+      let msg = 'Gagal login';
+      if (err.message.includes('Invalid login credentials')) msg = 'Email atau password salah!';
+      if (err.message.includes('Email not confirmed')) msg = 'Konfirmasi email terlebih dahulu!';
       alert(msg);
-      console.error('Login error:', error);
+      console.error(err);
     }
   });
-} else {
-  console.log('loginForm tidak ditemukan di halaman ini (normal jika bukan halaman login)');
 }
 
-// FORGOT PASSWORD LOGIC
+// FORGOT PASSWORD
 const forgotForm = document.getElementById('forgotForm');
 if (forgotForm) {
-  console.log('forgotForm DITEMUKAN!');
-  
   forgotForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    console.log('Form forgot password di-submit!');
+    const email = document.getElementById('forgot-email')?.value.trim() || '';
+    if (!email) return alert('Masukkan email Anda!');
 
-    const email = document.querySelector('#forgotForm input[type="email"]').value.trim();
+    try {
+      const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://trdjournal.netlify.app/update-password.html'
+      });
+      if (error) throw error;
+      alert('Link reset telah dikirim ke email Anda. Cek inbox/spam.');
+    } catch (err) {
+      alert('Gagal kirim link: ' + (err.message || 'Cek koneksi'));
+      console.error(err);
+    }
+  });
+}
 
-    if (!email) {
-      alert('Masukkan email Anda terlebih dahulu!');
+// UPDATE PASSWORD (dari update-password.html)
+const updateForm = document.getElementById('updateForm');
+if (updateForm) {
+  updateForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newPass = document.getElementById('newPassword').value;
+    const confirmPass = document.getElementById('confirmPassword').value;
+    const errorEl = document.getElementById('errorMsg');
+
+    errorEl.style.display = 'none';
+    errorEl.textContent = '';
+
+    if (newPass.length < 6) {
+      errorEl.textContent = 'Password minimal 6 karakter';
+      errorEl.style.display = 'block';
+      return;
+    }
+    if (newPass !== confirmPass) {
+      errorEl.textContent = 'Konfirmasi password tidak cocok';
+      errorEl.style.display = 'block';
       return;
     }
 
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://trdjournal.netlify.app/update-password.html'
-      });
-
+      const { error } = await supabaseClient.auth.updateUser({ password: newPass });
       if (error) throw error;
-
-      alert('Link reset password telah dikirim ke email Anda!\nCek inbox atau folder spam.');
-    } catch (error) {
-      let msg = 'Gagal mengirim link reset';
-      if (error.message.includes('invalid') || error.message.includes('not found')) {
-        msg = 'Email tidak terdaftar atau tidak valid';
-      } else if (error.message.includes('rate limit')) {
-        msg = 'Terlalu banyak percobaan. Coba lagi nanti';
-      } else {
-        msg += ': ' + error.message;
-      }
-      alert(msg);
-      console.error('Forgot password error:', error);
+      alert('Password berhasil diupdate! Silakan login kembali.');
+      window.location.href = 'login.html';
+    } catch (err) {
+      errorEl.textContent = err.message || 'Gagal update password';
+      errorEl.style.display = 'block';
+      console.error(err);
     }
   });
-} else {
-  console.log('forgotForm tidak ditemukan di halaman ini (normal jika bukan halaman forgot-password)');
 }
+
+console.log('Semua handler auth siap');

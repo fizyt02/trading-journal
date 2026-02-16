@@ -7,103 +7,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    body {
-      background: url('image/latar.jpg') no-repeat center center fixed;
-      background-size: cover;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .register-container {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 40px;
-      width: 380px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      z-index: 3;
-      text-align: center;
-    }
-
-    .register-container h2 {
-      margin-bottom: 25px;
-      color: white;
-      font-weight: 600;
-    }
-
-    .input-group {
-      position: relative;
-      margin-bottom: 15px;
-      width: 100%;
-    }
-
-    .input-group input {
-      width: 100%;
-      padding: 12px 15px 12px 40px;
-      border: none;
-      border-radius: 50px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .input-group input::placeholder {
-      color: white !important;
-      opacity: 0.7;
-    }
-
-    .input-group i {
-      position: absolute;
-      left: 15px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: white;
-      font-size: 18px;
-    }
-
-    .register-btn {
-      width: 100%;
-      padding: 14px;
-      background: white;
-      color: #6600cc;
-      border: none;
-      border-radius: 50px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 20px;
-      transition: all 0.3s ease;
-    }
-
-    .register-btn:hover {
-      background: #f0f0f0;
-      transform: translateY(-2px);
-    }
-
-    .login-link {
-      display: block;
-      margin-top: 25px;
-      color: #fff;
-      font-size: 14px;
-      text-decoration: none;
-    }
-
-    .login-link:hover {
-      text-decoration: underline;
-    }
+    /* style tetap sama */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: url('image/latar.jpg') no-repeat center center fixed; background-size: cover; height: 100vh; display: flex; justify-content: center; align-items: center; position: relative; overflow: hidden; }
+    .register-container { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); border-radius: 16px; padding: 40px; width: 380px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.2); z-index: 3; text-align: center; }
+    .register-container h2 { margin-bottom: 25px; color: white; font-weight: 600; }
+    .input-group { position: relative; margin-bottom: 15px; width: 100%; }
+    .input-group input { width: 100%; padding: 12px 15px 12px 40px; border: none; border-radius: 50px; background: rgba(255, 255, 255, 0.1); color: white; font-size: 14px; outline: none; }
+    .input-group input::placeholder { color: white !important; opacity: 0.7; }
+    .input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: white; font-size: 18px; }
+    .register-btn { width: 100%; padding: 14px; background: white; color: #6600cc; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: all 0.3s ease; }
+    .register-btn:hover { background: #f0f0f0; transform: translateY(-2px); }
+    .login-link { display: block; margin-top: 25px; color: #fff; font-size: 14px; text-decoration: none; }
+    .login-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -113,22 +29,22 @@
     <form id="registerForm">
       <div class="input-group">
         <i class="fas fa-user"></i>
-        <input type="text" placeholder="Full Name" required />
+        <input type="text" id="reg-fullname" placeholder="Full Name" required />
       </div>
       
       <div class="input-group">
         <i class="fas fa-envelope"></i>
-        <input type="email" placeholder="Email (Gmail)" required />
+        <input type="email" id="reg-email" placeholder="Email (Gmail)" required />
       </div>
       
       <div class="input-group">
         <i class="fas fa-phone"></i>
-        <input type="tel" placeholder="Phone Number" required />
+        <input type="tel" id="reg-phone" placeholder="Phone Number" required />
       </div>
 
       <div class="input-group">
         <i class="fas fa-lock"></i>
-        <input type="password" placeholder="Password" required minlength="6" />
+        <input type="password" id="reg-password" placeholder="Password" required minlength="6" />
       </div>
 
       <button type="submit" class="register-btn">Register</button>
@@ -138,16 +54,5 @@
   </div>
 
   <script src="script.js" defer></script>
-  <script>
-    // Debug: cek apakah form ada sebelum script.js jalan
-    document.addEventListener('DOMContentLoaded', () => {
-      if (document.getElementById('registerForm')) {
-        console.log('Form register ADA di halaman');
-      } else {
-        console.log('Form register TIDAK ADA! Cek id="registerForm"');
-        alert('Error: Form register tidak ditemukan. Cek HTML!');
-      }
-    });
-  </script>
 </body>
 </html>
