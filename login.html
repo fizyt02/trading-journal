@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    /* Style kamu sebelumnya tetap sama, saya tidak ubah agar konsisten */
     * {
       margin: 0;
       padding: 0;
@@ -84,9 +83,8 @@
       font-size: 14px;
     }
 
-    .remember-me input {
-      margin-right: 5px;
-      width: auto;
+    .remember-me label {
+      margin-left: 5px;
     }
 
     .forgot-password {
@@ -132,7 +130,7 @@
     
     <form id="loginForm">
       <div class="input-group">
-        <i class="fas fa-envelope"></i>  <!-- Ubah icon ke envelope untuk email -->
+        <i class="fas fa-envelope"></i>
         <input type="email" placeholder="Email" required />
       </div>
       

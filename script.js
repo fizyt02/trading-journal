@@ -3,7 +3,7 @@ const supabaseUrl  = 'https://jrsbpkjqosnepruiljc.supabase.co';
 const supabaseKey  = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
 const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
 
-// Helper: Cek apakah sudah login
+// Helper: Cek status login
 async function checkAuth(redirectIfLoggedIn = false) {
   const { data: { session } } = await supabase.auth.getSession();
   if (session && redirectIfLoggedIn && !window.location.pathname.includes('dashboard.html')) {
@@ -12,9 +12,9 @@ async function checkAuth(redirectIfLoggedIn = false) {
   return session;
 }
 
-// Jalankan check auth di semua halaman
+// Jalankan check auth di semua halaman saat dimuat
 document.addEventListener('DOMContentLoaded', async () => {
-  await checkAuth(true);
+  await checkAuth(true); // Redirect ke dashboard kalau sudah login (kecuali di dashboard sendiri)
 });
 
 // REGISTER LOGIC
@@ -29,6 +29,7 @@ if (registerForm) {
     const phone     = document.querySelector('input[placeholder="Phone Number"]').value.trim();
     const password  = document.querySelector('input[placeholder="Password"]').value;
 
+    // Validasi sederhana
     if (!fullName || !username || !email || !password) {
       alert('Semua field wajib diisi!');
       return;
@@ -53,11 +54,19 @@ if (registerForm) {
 
       if (error) throw error;
 
-      alert('Registrasi berhasil! Cek email untuk konfirmasi (jika aktif).');
+      alert('Registrasi berhasil! Cek email Anda untuk konfirmasi akun (jika diaktifkan).');
       window.location.href = 'login.html';
     } catch (error) {
-      alert('Gagal registrasi: ' + (error.message || 'Terjadi kesalahan'));
-      console.error(error);
+      let msg = 'Gagal registrasi';
+      if (error.message.includes('duplicate key')) {
+        msg = 'Email atau username sudah terdaftar';
+      } else if (error.message.includes('weak password')) {
+        msg = 'Password terlalu lemah';
+      } else {
+        msg += ': ' + error.message;
+      }
+      alert(msg);
+      console.error('Register error:', error);
     }
   });
 }
@@ -91,12 +100,14 @@ if (loginForm) {
       if (error.message.includes('Invalid login credentials')) {
         msg = 'Email atau password salah!';
       } else if (error.message.includes('Email not confirmed')) {
-        msg = 'Silakan konfirmasi email terlebih dahulu!';
+        msg = 'Silakan konfirmasi email terlebih dahulu! Cek inbox/spam.';
+      } else if (error.message.includes('rate limit')) {
+        msg = 'Terlalu banyak percobaan. Coba lagi nanti.';
       } else {
-        msg = error.message;
+        msg += ': ' + error.message;
       }
       alert(msg);
-      console.error(error);
+      console.error('Login error:', error);
     }
   });
 }
@@ -107,7 +118,8 @@ if (forgotForm) {
   forgotForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email = document.querySelector('#forgotForm input[type="email"]').value.trim();
+    const emailInput = document.querySelector('#forgotForm input[type="email"]');
+    const email = emailInput?.value.trim();
 
     if (!email) {
       alert('Masukkan email Anda terlebih dahulu!');
@@ -115,7 +127,7 @@ if (forgotForm) {
     }
 
     try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: 'https://trdjournal.netlify.app/update-password.html'
       });
 
@@ -123,16 +135,16 @@ if (forgotForm) {
 
       alert('Link reset password telah dikirim ke email Anda!\nCek inbox atau folder spam.');
     } catch (error) {
-      let msg = 'Terjadi kesalahan saat mengirim link reset';
+      let msg = 'Gagal mengirim link reset';
       if (error.message.includes('invalid') || error.message.includes('not found')) {
         msg = 'Email tidak terdaftar atau tidak valid';
-      } else if (error.message.includes('rate limit')) {
+      } else if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
         msg = 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit';
       } else {
-        msg = error.message;
+        msg += ': ' + error.message;
       }
       alert(msg);
-      console.error('Reset password error:', error);
+      console.error('Forgot password error:', error);
     }
   });
 }
