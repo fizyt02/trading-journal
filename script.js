@@ -37,17 +37,35 @@ if (registerForm) {
     if (password.length < 6) return alert('Password minimal 6 karakter!');
 
     try {
-      const { error } = await supabaseClient.auth.signUp({
-        email, password,
-        options: { data: { full_name: fullName, phone } }
-      });
-      if (error) throw error;
-      alert('Registrasi berhasil! Cek email untuk konfirmasi.');
-      window.location.href = 'login.html';
-    } catch (err) {
-      alert('Gagal registrasi: ' + (err.message || 'Cek koneksi'));
-      console.error(err);
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        full_name: fullName,   // harus pakai underscore, sesuai yang di-trigger SQL
+        phone: phone
+      }
     }
+  });
+
+  if (error) throw error;
+
+  alert('Registrasi berhasil! Cek email Anda untuk konfirmasi akun (jika diaktifkan).');
+  window.location.href = 'login.html';
+} catch (err) {
+  let msg = 'Gagal registrasi';
+  if (err.message.includes('duplicate key') || err.message.includes('unique constraint')) {
+    msg = 'Email sudah terdaftar!';
+  } else if (err.message.includes('weak password')) {
+    msg = 'Password terlalu lemah (minimal 6 karakter, tambah variasi)';
+  } else if (err.message.includes('rate limit')) {
+    msg = 'Terlalu banyak percobaan, coba lagi nanti';
+  } else {
+    msg += ': ' + (err.message || 'Cek koneksi / Supabase');
+  }
+  alert(msg);
+  console.error('Register error:', err);
+}
   });
 }
 
