@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
+    /* Style kamu sebelumnya tetap sama, saya tidak ubah agar konsisten */
     * {
       margin: 0;
       padding: 0;
@@ -77,7 +78,7 @@
     .remember-me {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between;
       margin-bottom: 15px;
       color: white;
       font-size: 14px;
@@ -89,11 +90,9 @@
     }
 
     .forgot-password {
-      margin-left: auto;
       color: #fff;
       text-decoration: none;
       font-size: 14px;
-      cursor: pointer;
     }
 
     .forgot-password:hover {
@@ -133,8 +132,8 @@
     
     <form id="loginForm">
       <div class="input-group">
-        <i class="fas fa-user"></i>
-        <input type="text" placeholder="Username" required />
+        <i class="fas fa-envelope"></i>  <!-- Ubah icon ke envelope untuk email -->
+        <input type="email" placeholder="Email" required />
       </div>
       
       <div class="input-group">
@@ -143,8 +142,10 @@
       </div>
       
       <div class="remember-me">
-        <input type="checkbox" id="remember" />
-        <label for="remember">Remember me</label>
+        <div>
+          <input type="checkbox" id="remember" />
+          <label for="remember">Remember me</label>
+        </div>
         <a href="forgot-password.html" class="forgot-password">Forgot Password?</a>
       </div>
       

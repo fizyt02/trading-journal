@@ -1,20 +1,20 @@
 // script.js
-const supabaseUrl = 'https://trdjournal.netlify.app/';          // GANTI DENGAN URL PROJECT KAMU
-const supabaseKey = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';                        // GANTI DENGAN anon key dari Supabase → Settings → API
+const supabaseUrl  = 'https://jrsbpkjqosnepruiljc.supabase.co';
+const supabaseKey  = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
 const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
 
 // Helper: Cek apakah sudah login
 async function checkAuth(redirectIfLoggedIn = false) {
   const { data: { session } } = await supabase.auth.getSession();
-  if (session && redirectIfLoggedIn) {
-    window.location.href = 'dashboard.html'; // nanti buat file ini
+  if (session && redirectIfLoggedIn && !window.location.pathname.includes('dashboard.html')) {
+    window.location.href = 'dashboard.html';
   }
   return session;
 }
 
-// Jalankan check auth di semua halaman (bisa di-expand)
+// Jalankan check auth di semua halaman
 document.addEventListener('DOMContentLoaded', async () => {
-  await checkAuth(true); // redirect jika sudah login (untuk index.html, login, register, dll)
+  await checkAuth(true);
 });
 
 // REGISTER LOGIC
@@ -29,7 +29,6 @@ if (registerForm) {
     const phone     = document.querySelector('input[placeholder="Phone Number"]').value.trim();
     const password  = document.querySelector('input[placeholder="Password"]').value;
 
-    // Validasi sederhana
     if (!fullName || !username || !email || !password) {
       alert('Semua field wajib diisi!');
       return;
@@ -54,7 +53,7 @@ if (registerForm) {
 
       if (error) throw error;
 
-      alert('Registrasi berhasil! Cek email Anda untuk konfirmasi (jika aktif).');
+      alert('Registrasi berhasil! Cek email untuk konfirmasi (jika aktif).');
       window.location.href = 'login.html';
     } catch (error) {
       alert('Gagal registrasi: ' + (error.message || 'Terjadi kesalahan'));
@@ -69,7 +68,7 @@ if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const email = document.querySelector('input[placeholder="Username"]').value.trim(); // asumsi username = email
+    const email = document.querySelector('input[placeholder="Email"]').value.trim();
     const password = document.querySelector('input[placeholder="Password"]').value;
 
     if (!email || !password) {
@@ -86,7 +85,7 @@ if (loginForm) {
       if (error) throw error;
 
       alert('Login berhasil!');
-      window.location.href = 'dashboard.html'; // redirect ke dashboard
+      window.location.href = 'dashboard.html';
     } catch (error) {
       let msg = 'Terjadi kesalahan';
       if (error.message.includes('Invalid login credentials')) {
@@ -102,15 +101,13 @@ if (loginForm) {
   });
 }
 
-// FORGOT PASSWORD 
+// FORGOT PASSWORD LOGIC
 const forgotForm = document.getElementById('forgotForm');
 if (forgotForm) {
   forgotForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Ambil email dari input (sesuai HTML forgot-password.html)
-    const emailInput = document.querySelector('#forgotForm input[type="email"]');
-    const email = emailInput?.value.trim();
+    const email = document.querySelector('#forgotForm input[type="email"]').value.trim();
 
     if (!email) {
       alert('Masukkan email Anda terlebih dahulu!');
@@ -119,29 +116,21 @@ if (forgotForm) {
 
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/update-password.html`  
-        // Ganti '/update-password.html' dengan halaman reset password kamu nanti
-        // Contoh: https://nama-domainkamu.com/update-password.html
+        redirectTo: 'https://trdjournal.netlify.app/update-password.html'
       });
 
       if (error) throw error;
 
       alert('Link reset password telah dikirim ke email Anda!\nCek inbox atau folder spam.');
-      
-      // Optional: kembali ke login setelah kirim
-      // window.location.href = 'login.html';
-
     } catch (error) {
       let msg = 'Terjadi kesalahan saat mengirim link reset';
-
       if (error.message.includes('invalid') || error.message.includes('not found')) {
         msg = 'Email tidak terdaftar atau tidak valid';
-      } else if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
+      } else if (error.message.includes('rate limit')) {
         msg = 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit';
       } else {
         msg = error.message;
       }
-
       alert(msg);
       console.error('Reset password error:', error);
     }
