@@ -1,5 +1,4 @@
-// script.js - Versi bersih, tanpa duplikasi supabase
-console.log('script.js berhasil dimuat!'); // Debug: pastikan file ini jalan
+console.log('script.js berhasil dimuat!'); 
 
 const supabaseUrl  = 'https://jrsbpkjqosnepruiljc.supabase.co';
 const supabaseKey  = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
@@ -168,3 +167,4 @@ if (forgotForm) {
 } else {
   console.log('forgotForm tidak ditemukan di halaman ini (normal jika bukan halaman forgot-password)');
 }
+
