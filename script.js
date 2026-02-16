@@ -1,7 +1,11 @@
-// script.js
+// script.js - Versi bersih, tanpa duplikasi supabase
+console.log('script.js berhasil dimuat!'); // Debug: pastikan file ini jalan
+
 const supabaseUrl  = 'https://jrsbpkjqosnepruiljc.supabase.co';
 const supabaseKey  = 'sb_publishable_VXQr2F_w-tXxS7fVIYmSKg_ZkNcbICj';
 const supabase = Supabase.createClient(supabaseUrl, supabaseKey);
+
+console.log('Supabase client berhasil dibuat!'); // Debug: cek inisialisasi
 
 // Helper: Cek apakah sudah login
 async function checkAuth(redirectIfLoggedIn = false) {
@@ -12,33 +16,39 @@ async function checkAuth(redirectIfLoggedIn = false) {
   return session;
 }
 
-// Jalankan check auth di semua halaman saat dimuat
+// Jalankan check auth di semua halaman
 document.addEventListener('DOMContentLoaded', async () => {
-  await checkAuth(true); // Redirect ke dashboard kalau sudah login (kecuali di dashboard sendiri)
+  console.log('DOMContentLoaded: Memulai check auth');
+  await checkAuth(true);
 });
 
 // REGISTER LOGIC (tanpa username)
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
+  console.log('registerForm DITEMUKAN! Event listener diaktifkan');
+  
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('Form register di-submit!');
 
     const fullName = document.querySelector('input[placeholder="Full Name"]').value.trim();
     const email     = document.querySelector('input[placeholder="Email (Gmail)"]').value.trim();
     const phone     = document.querySelector('input[placeholder="Phone Number"]').value.trim();
     const password  = document.querySelector('input[placeholder="Password"]').value;
 
-    // Validasi sederhana
     if (!fullName || !email || !phone || !password) {
       alert('Semua field wajib diisi!');
+      console.log('Validasi gagal: field kosong');
       return;
     }
     if (password.length < 6) {
       alert('Password minimal 6 karakter!');
+      console.log('Validasi gagal: password terlalu pendek');
       return;
     }
 
     try {
+      console.log('Mengirim request signUp ke Supabase...');
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -52,28 +62,36 @@ if (registerForm) {
 
       if (error) throw error;
 
+      console.log('Registrasi sukses:', data);
       alert('Registrasi berhasil! Cek email Anda untuk konfirmasi akun (jika diaktifkan).');
       window.location.href = 'login.html';
     } catch (error) {
+      console.error('Register error:', error);
       let msg = 'Gagal registrasi';
-      if (error.message.includes('duplicate key') || error.message.includes('unique')) {
-        msg = 'Email sudah terdaftar';
+      if (error.message.includes('duplicate key') || error.message.includes('unique constraint')) {
+        msg = 'Email sudah terdaftar!';
       } else if (error.message.includes('weak password')) {
-        msg = 'Password terlalu lemah (coba tambah angka/symbol)';
+        msg = 'Password terlalu lemah (minimal 6 karakter, tambah angka/symbol lebih baik)';
+      } else if (error.message.includes('rate limit')) {
+        msg = 'Terlalu banyak percobaan. Coba lagi beberapa menit.';
       } else {
-        msg += ': ' + error.message;
+        msg += ': ' + (error.message || 'Terjadi kesalahan tidak diketahui');
       }
       alert(msg);
-      console.error('Register error:', error);
     }
   });
+} else {
+  console.error('registerForm TIDAK DITEMUKAN! Pastikan <form id="registerForm"> ada di HTML.');
 }
 
 // LOGIN LOGIC
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
+  console.log('loginForm DITEMUKAN!');
+  
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('Form login di-submit!');
 
     const email = document.querySelector('input[placeholder="Email"]').value.trim();
     const password = document.querySelector('input[placeholder="Password"]').value;
@@ -99,8 +117,6 @@ if (loginForm) {
         msg = 'Email atau password salah!';
       } else if (error.message.includes('Email not confirmed')) {
         msg = 'Silakan konfirmasi email terlebih dahulu! Cek inbox/spam.';
-      } else if (error.message.includes('rate limit')) {
-        msg = 'Terlalu banyak percobaan. Coba lagi nanti.';
       } else {
         msg += ': ' + error.message;
       }
@@ -108,16 +124,20 @@ if (loginForm) {
       console.error('Login error:', error);
     }
   });
+} else {
+  console.log('loginForm tidak ditemukan di halaman ini (normal jika bukan halaman login)');
 }
 
-// FORGOT PASSWORD / RESET PASSWORD LOGIC
+// FORGOT PASSWORD LOGIC
 const forgotForm = document.getElementById('forgotForm');
 if (forgotForm) {
+  console.log('forgotForm DITEMUKAN!');
+  
   forgotForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    console.log('Form forgot password di-submit!');
 
-    const emailInput = document.querySelector('#forgotForm input[type="email"]');
-    const email = emailInput?.value.trim();
+    const email = document.querySelector('#forgotForm input[type="email"]').value.trim();
 
     if (!email) {
       alert('Masukkan email Anda terlebih dahulu!');
@@ -136,8 +156,8 @@ if (forgotForm) {
       let msg = 'Gagal mengirim link reset';
       if (error.message.includes('invalid') || error.message.includes('not found')) {
         msg = 'Email tidak terdaftar atau tidak valid';
-      } else if (error.message.includes('rate limit') || error.message.includes('too many requests')) {
-        msg = 'Terlalu banyak percobaan. Coba lagi dalam beberapa menit';
+      } else if (error.message.includes('rate limit')) {
+        msg = 'Terlalu banyak percobaan. Coba lagi nanti';
       } else {
         msg += ': ' + error.message;
       }
@@ -145,4 +165,6 @@ if (forgotForm) {
       console.error('Forgot password error:', error);
     }
   });
+} else {
+  console.log('forgotForm tidak ditemukan di halaman ini (normal jika bukan halaman forgot-password)');
 }
