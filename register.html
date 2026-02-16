@@ -107,7 +107,6 @@
   </style>
 </head>
 <body>
-
   <div class="register-container">
     <h2>Create Account</h2>
     
@@ -139,5 +138,16 @@
   </div>
 
   <script src="script.js" defer></script>
+  <script>
+    // Debug: cek apakah form ada sebelum script.js jalan
+    document.addEventListener('DOMContentLoaded', () => {
+      if (document.getElementById('registerForm')) {
+        console.log('Form register ADA di halaman');
+      } else {
+        console.log('Form register TIDAK ADA! Cek id="registerForm"');
+        alert('Error: Form register tidak ditemukan. Cek HTML!');
+      }
+    });
+  </script>
 </body>
 </html>
